@@ -1,15 +1,18 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CalendarDays, MessageSquare, Users } from "lucide-react";
+import { CalendarDays, MessageSquare, Users, UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { EmployeeShiftDialog } from "@/components/schedule/EmployeeShiftDialog";
+import { OwnerShiftDialog } from "@/components/schedule/OwnerShiftDialog";
+import { Employee, ShiftAssignment, ShiftType } from "@/types/schedule";
 
 const Schedule = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -17,14 +20,55 @@ const Schedule = () => {
   const { toast } = useToast();
   const { addNotification } = useNotifications();
   const { user } = useAuth();
+  const [employeeDialogOpen, setEmployeeDialogOpen] = useState(false);
+  const [ownerDialogOpen, setOwnerDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  
+  // Initial state with demo data
+  const [employees, setEmployees] = useState<Employee[]>([
+    { 
+      id: 1, 
+      name: "Анна", 
+      shifts: Array.from({ length: 15 }, (_, i) => ({ date: i * 2 + 1, type: 'full' as ShiftType }))
+    },
+    { 
+      id: 2, 
+      name: "Иван", 
+      shifts: Array.from({ length: 15 }, (_, i) => ({ date: i * 2 + 2, type: 'full' as ShiftType }))
+    },
+    { 
+      id: 3, 
+      name: "Мария", 
+      shifts: [1, 2, 5, 6, 9, 10, 13, 14, 17, 18, 21, 22, 25, 26, 29, 30].map(day => ({ date: day, type: 'full' as ShiftType }))
+    },
+    { 
+      id: 4, 
+      name: "Алексей", 
+      shifts: [3, 4, 7, 8, 11, 12, 15, 16, 19, 20, 23, 24, 27, 28].map(day => ({ date: day, type: 'full' as ShiftType }))
+    }
+  ]);
 
-  // Demo data
-  const employees = [
-    { id: 1, name: "Анна", shifts: [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29] },
-    { id: 2, name: "Иван", shifts: [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30] },
-    { id: 3, name: "Мария", shifts: [1, 2, 5, 6, 9, 10, 13, 14, 17, 18, 21, 22, 25, 26, 29, 30] },
-    { id: 4, name: "Алексей", shifts: [3, 4, 7, 8, 11, 12, 15, 16, 19, 20, 23, 24, 27, 28] }
-  ];
+  // Function to load schedule data
+  useEffect(() => {
+    // In a real app, you'd fetch this data from a backend/localStorage
+    const savedSchedule = localStorage.getItem("coffeeShopSchedule");
+    if (savedSchedule) {
+      try {
+        const parsedSchedule = JSON.parse(savedSchedule);
+        if (Array.isArray(parsedSchedule)) {
+          setEmployees(parsedSchedule);
+        }
+      } catch (error) {
+        console.error("Error parsing schedule data:", error);
+      }
+    }
+  }, []);
+
+  // Function to save schedule data
+  const saveScheduleData = (updatedEmployees: Employee[]) => {
+    setEmployees(updatedEmployees);
+    localStorage.setItem("coffeeShopSchedule", JSON.stringify(updatedEmployees));
+  };
 
   const sendMessage = () => {
     toast({
@@ -50,14 +94,169 @@ const Schedule = () => {
 
   const days = getDaysInMonth();
 
-  const getEmployeeForDay = (day: number) => {
-    return employees.filter(employee => employee.shifts.includes(day)).map(e => e.name);
+  const getEmployeeShiftForDay = (day: number) => {
+    return employees
+      .filter(employee => employee.shifts.some(shift => shift.date === day))
+      .map(e => ({
+        id: e.id,
+        name: e.name,
+        type: e.shifts.find(shift => shift.date === day)?.type || 'full'
+      }));
+  };
+
+  const isEmployeeOnShift = (employeeId: number, day: number) => {
+    const employee = employees.find(e => e.id === employeeId);
+    return employee?.shifts.some(shift => shift.date === day) || false;
+  };
+
+  const getShiftTypeForDay = (employeeId: number, day: number): ShiftType | null => {
+    const employee = employees.find(e => e.id === employeeId);
+    const shift = employee?.shifts.find(shift => shift.date === day);
+    return shift ? shift.type : null;
+  };
+
+  // Handle date selection for employee
+  const handleDateSelect = (newDate: Date | undefined) => {
+    setDate(newDate);
+    if (newDate && user?.role === 'employee') {
+      const dayOfMonth = newDate.getDate();
+      const userId = parseInt(user.id);
+      
+      // Check if employee has a shift on this day
+      if (isEmployeeOnShift(userId, dayOfMonth)) {
+        setSelectedDate(newDate);
+        setEmployeeDialogOpen(true);
+      }
+    }
+  };
+
+  // Handle remove shift for employee
+  const handleRemoveShift = (shiftDate: Date) => {
+    if (!user) return;
+    
+    const dayOfMonth = shiftDate.getDate();
+    const employeeId = parseInt(user.id);
+    
+    const updatedEmployees = employees.map(employee => {
+      if (employee.id === employeeId) {
+        return {
+          ...employee,
+          shifts: employee.shifts.filter(shift => shift.date !== dayOfMonth)
+        };
+      }
+      return employee;
+    });
+    
+    saveScheduleData(updatedEmployees);
+  };
+
+  // Handle transfer shift for employee
+  const handleTransferShift = (oldDate: Date, newDate: Date) => {
+    if (!user) return;
+    
+    const oldDay = oldDate.getDate();
+    const newDay = newDate.getDate();
+    const employeeId = parseInt(user.id);
+    
+    // Check if already has a shift on the new day
+    if (isEmployeeOnShift(employeeId, newDay)) {
+      toast({
+        title: "Невозможно перенести смену",
+        description: "У вас уже назначена смена на выбранную дату.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Get the shift type from the old day
+    const shiftType = getShiftTypeForDay(employeeId, oldDay);
+    if (!shiftType) return;
+    
+    const updatedEmployees = employees.map(employee => {
+      if (employee.id === employeeId) {
+        const newShifts = employee.shifts.filter(shift => shift.date !== oldDay);
+        newShifts.push({ date: newDay, type: shiftType });
+        return {
+          ...employee,
+          shifts: newShifts
+        };
+      }
+      return employee;
+    });
+    
+    saveScheduleData(updatedEmployees);
+  };
+
+  // Handle assign shifts for owner
+  const handleAssignShifts = (employeeId: number, dates: Date[], shiftType: 'full' | 'half') => {
+    const newShiftDays = dates.map(date => date.getDate());
+    
+    // Handle case when less than 2 employees (only one employee should work per day)
+    if (employees.length < 2) {
+      // For each day, remove shifts for all other employees
+      const updatedEmployees = employees.map(employee => {
+        if (employee.id === employeeId) {
+          // For selected employee, add new shifts
+          const existingShiftDays = employee.shifts.map(s => s.date);
+          const uniqueNewDays = newShiftDays.filter(day => !existingShiftDays.includes(day));
+          const updatedShifts = [
+            ...employee.shifts,
+            ...uniqueNewDays.map(day => ({ date: day, type: shiftType }))
+          ];
+          return { ...employee, shifts: updatedShifts };
+        } else {
+          // For other employees, remove shifts on these days
+          return {
+            ...employee,
+            shifts: employee.shifts.filter(shift => !newShiftDays.includes(shift.date))
+          };
+        }
+      });
+      saveScheduleData(updatedEmployees);
+    } else {
+      // Normal case - just add the shifts to the selected employee
+      const updatedEmployees = employees.map(employee => {
+        if (employee.id === employeeId) {
+          // Get current shift days
+          const currentShiftDays = employee.shifts.map(s => s.date);
+          
+          // Add new shifts (excluding days where employee already has a shift)
+          let updatedShifts = [...employee.shifts];
+          
+          for (const day of newShiftDays) {
+            const existingShiftIndex = updatedShifts.findIndex(shift => shift.date === day);
+            
+            if (existingShiftIndex >= 0) {
+              // Update existing shift type
+              updatedShifts[existingShiftIndex] = { date: day, type: shiftType };
+            } else {
+              // Add new shift
+              updatedShifts.push({ date: day, type: shiftType });
+            }
+          }
+          
+          return { ...employee, shifts: updatedShifts };
+        }
+        return employee;
+      });
+      
+      saveScheduleData(updatedEmployees);
+    }
   };
 
   return (
     <MainLayout>
       <div className="space-y-4">
-        <h1 className="text-xl font-semibold">График смен</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold">График смен</h1>
+          
+          {user?.role === 'owner' && (
+            <Button onClick={() => setOwnerDialogOpen(true)}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              Назначить смены
+            </Button>
+          )}
+        </div>
         
         <Tabs defaultValue="calendar" value={view} onValueChange={setView}>
           <TabsList className="grid w-full grid-cols-2">
@@ -70,14 +269,16 @@ const Schedule = () => {
               <CardHeader>
                 <CardTitle>Календарь смен</CardTitle>
                 <CardDescription>
-                  Выберите дату для просмотра и управления сменами
+                  {user?.role === 'owner' 
+                    ? "Выберите дату для просмотра и назначения смен" 
+                    : "Выберите свою смену для управления"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex justify-center pb-6">
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={setDate}
+                  onSelect={handleDateSelect}
                   className="rounded-md border"
                 />
               </CardContent>
@@ -100,17 +301,33 @@ const Schedule = () => {
                 <CardContent>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      {getEmployeeForDay(date.getDate()).length > 0 ? (
-                        getEmployeeForDay(date.getDate()).map((name, i) => (
+                      {getEmployeeShiftForDay(date.getDate()).length > 0 ? (
+                        getEmployeeShiftForDay(date.getDate()).map((employee) => (
                           <div
-                            key={i}
+                            key={employee.id}
                             className="flex items-center justify-between rounded-md border p-3"
                           >
-                            <div className="flex items-center">
-                              <Users className="mr-2 h-5 w-5 text-muted-foreground" />
-                              <span>{name}</span>
+                            <div className="flex items-center gap-2">
+                              <Users className="h-5 w-5 text-muted-foreground" />
+                              <span>{employee.name}</span>
+                              {employee.type === 'half' && (
+                                <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full">
+                                  пол дня
+                                </span>
+                              )}
                             </div>
-                            <Button variant="ghost" size="sm">Изменить</Button>
+                            {user?.role === 'owner' && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedDate(date);
+                                  setOwnerDialogOpen(true);
+                                }}
+                              >
+                                Изменить
+                              </Button>
+                            )}
                           </div>
                         ))
                       ) : (
@@ -158,17 +375,26 @@ const Schedule = () => {
                           <TableCell className="sticky left-0 bg-background font-medium">
                             {employee.name}
                           </TableCell>
-                          {days.map(day => (
-                            <TableCell key={day} className="p-0 text-center">
-                              {employee.shifts.includes(day) ? (
-                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-coffee-purple bg-opacity-20 text-coffee-purple">
-                                  ✓
-                                </div>
-                              ) : (
-                                <div className="h-10 w-10"></div>
-                              )}
-                            </TableCell>
-                          ))}
+                          {days.map(day => {
+                            const shift = employee.shifts.find(s => s.date === day);
+                            return (
+                              <TableCell key={day} className="p-0 text-center">
+                                {shift ? (
+                                  <div 
+                                    className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                                      shift.type === 'half' 
+                                        ? 'bg-amber-100 text-amber-800' 
+                                        : 'bg-coffee-purple bg-opacity-20 text-coffee-purple'
+                                    }`}
+                                  >
+                                    {shift.type === 'half' ? '½' : '✓'}
+                                  </div>
+                                ) : (
+                                  <div className="h-10 w-10"></div>
+                                )}
+                              </TableCell>
+                            );
+                          })}
                         </TableRow>
                       ))}
                     </TableBody>
@@ -179,6 +405,29 @@ const Schedule = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Dialogs */}
+      {selectedDate && (
+        <>
+          <EmployeeShiftDialog
+            isOpen={employeeDialogOpen}
+            onClose={() => {
+              setEmployeeDialogOpen(false);
+              setSelectedDate(null);
+            }}
+            currentDate={selectedDate}
+            onRemoveShift={handleRemoveShift}
+            onTransferShift={handleTransferShift}
+          />
+        </>
+      )}
+
+      <OwnerShiftDialog
+        isOpen={ownerDialogOpen}
+        onClose={() => setOwnerDialogOpen(false)}
+        employees={employees}
+        onAssignShifts={handleAssignShifts}
+      />
     </MainLayout>
   );
 };
