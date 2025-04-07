@@ -153,7 +153,7 @@ export const OwnerShiftDialog: React.FC<OwnerShiftDialogProps> = ({
             <Calendar
               mode="multiple"
               selected={selectedDates}
-              onSelect={(date) => date && handleDayClick(date)}
+              onSelect={(dates) => dates && setSelectedDates(dates)}
               className="rounded-md border"
             />
           </div>
