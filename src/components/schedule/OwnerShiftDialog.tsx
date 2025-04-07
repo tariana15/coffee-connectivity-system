@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -37,21 +37,23 @@ export const OwnerShiftDialog: React.FC<OwnerShiftDialogProps> = ({
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [shiftType, setShiftType] = useState<'full' | 'half'>('full');
 
-  const handleDayClick = (date: Date) => {
-    const currentIndex = selectedDates.findIndex(
-      (selectedDate) => selectedDate.toDateString() === date.toDateString()
-    );
-
-    if (currentIndex >= 0) {
-      // Date is already selected, remove it
-      const newSelectedDates = [...selectedDates];
-      newSelectedDates.splice(currentIndex, 1);
-      setSelectedDates(newSelectedDates);
-    } else {
-      // Date is not selected, add it
-      setSelectedDates([...selectedDates, date]);
-    }
+  // Get the current shift days for the selected employee
+  const getEmployeeShiftDays = (employeeId: number): number[] => {
+    if (!employeeId) return [];
+    
+    const employee = employees.find(e => e.id === employeeId);
+    if (!employee) return [];
+    
+    return employee.shifts.map(shift => shift.date);
   };
+
+  // Effect to highlight existing shifts when employee is selected
+  useEffect(() => {
+    if (selectedEmployee) {
+      // Clear any previously selected dates
+      setSelectedDates([]);
+    }
+  }, [selectedEmployee]);
 
   const handleAssignShifts = () => {
     if (!selectedEmployee) {
@@ -96,6 +98,28 @@ export const OwnerShiftDialog: React.FC<OwnerShiftDialogProps> = ({
     onClose();
   };
 
+  // Helper to determine if a date should be highlighted
+  const isEmployeeShiftDate = (date: Date): boolean => {
+    if (!selectedEmployee) return false;
+    
+    const employeeShiftDays = getEmployeeShiftDays(selectedEmployee);
+    return employeeShiftDays.includes(date.getDate());
+  };
+
+  // Custom day renderer for the calendar
+  const renderDay = (day: Date) => {
+    const isEmployeeShift = isEmployeeShiftDate(day);
+    
+    return (
+      <div 
+        className={`relative h-9 w-9 p-0 font-normal flex items-center justify-center rounded-md
+          ${isEmployeeShift ? 'bg-coffee-purple bg-opacity-20 border border-coffee-purple' : ''}`}
+      >
+        {day.getDate()}
+      </div>
+    );
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={resetAndClose}>
       <DialogContent className="sm:max-w-[500px]">
@@ -121,6 +145,9 @@ export const OwnerShiftDialog: React.FC<OwnerShiftDialogProps> = ({
                   <div className="flex items-center">
                     <Users className="mr-2 h-5 w-5 text-muted-foreground" />
                     <span>{employee.name}</span>
+                    <span className="ml-2 text-sm text-muted-foreground">
+                      ({employee.shifts.length} смен)
+                    </span>
                   </div>
                   {selectedEmployee === employee.id && (
                     <Check className="h-5 w-5 text-primary" />
@@ -159,12 +186,12 @@ export const OwnerShiftDialog: React.FC<OwnerShiftDialogProps> = ({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={resetAndClose}>
+        <DialogFooter className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={resetAndClose} className="w-full sm:w-auto">
             Отмена
           </Button>
-          <Button onClick={handleAssignShifts}>
-            Назначить смены
+          <Button onClick={handleAssignShifts} className="w-full sm:w-auto">
+            Подтвердить смены
           </Button>
         </DialogFooter>
       </DialogContent>

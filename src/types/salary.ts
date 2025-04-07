@@ -13,6 +13,7 @@ export interface EmployeeShift {
   percentage: number;
   hours?: number;
   delivery?: number;
+  shiftType?: 'full' | 'half';
 }
 
 export interface EmployeeSalary {
@@ -21,6 +22,7 @@ export interface EmployeeSalary {
   firstHalfTotal: number;
   secondHalfTotal: number;
   monthTotal: number;
+  shiftCount?: number;
 }
 
 export interface MonthlyData {

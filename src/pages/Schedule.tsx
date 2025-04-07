@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -213,6 +212,9 @@ const Schedule = () => {
         }
       });
       saveScheduleData(updatedEmployees);
+      
+      // Update shifts count in localStorage for salary calculations
+      updateShiftsCountForSalary(updatedEmployees);
     } else {
       // Normal case - just add the shifts to the selected employee
       const updatedEmployees = employees.map(employee => {
@@ -241,7 +243,35 @@ const Schedule = () => {
       });
       
       saveScheduleData(updatedEmployees);
+      
+      // Update shifts count in localStorage for salary calculations
+      updateShiftsCountForSalary(updatedEmployees);
     }
+  };
+  
+  // Function to update shift counts for salary calculations
+  const updateShiftsCountForSalary = (updatedEmployees: Employee[]) => {
+    // Get the current month's salary data
+    const currentDate = new Date();
+    const currentMonth = currentDate.toLocaleString('ru-RU', { month: 'long' });
+    const currentYear = currentDate.getFullYear().toString();
+    
+    // Create shifts count data
+    const shiftsData = updatedEmployees.map(employee => ({
+      name: employee.name,
+      shiftCount: employee.shifts.length,
+      shiftTypes: {
+        full: employee.shifts.filter(shift => shift.type === 'full').length,
+        half: employee.shifts.filter(shift => shift.type === 'half').length
+      }
+    }));
+    
+    // Store the shifts data in localStorage
+    localStorage.setItem('coffeeShopShiftsCount', JSON.stringify({
+      month: currentMonth,
+      year: currentYear,
+      employees: shiftsData
+    }));
   };
 
   return (

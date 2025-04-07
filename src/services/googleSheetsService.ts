@@ -12,6 +12,20 @@ const SALARY_CONSTANTS: SalaryConstants = {
   percentageAbove: 0.05  // 5%
 };
 
+// Function to fetch shifts count from localStorage
+const getShiftsCountData = () => {
+  try {
+    const shiftsData = localStorage.getItem('coffeeShopShiftsCount');
+    if (shiftsData) {
+      return JSON.parse(shiftsData);
+    }
+    return null;
+  } catch (error) {
+    console.error("Error retrieving shifts data:", error);
+    return null;
+  }
+};
+
 // Mock data based on the provided spreadsheet image
 const mockAprilData: MonthlyData = {
   month: "Апрель",
@@ -66,7 +80,8 @@ function generateMockShifts(days: number, workDays: string[], allowHours = false
       worked: worked,
       percentage: worked ? Math.random() * 500 : 0,
       hours: hours,
-      delivery: Math.random() > 0.8 ? Math.round(Math.random() * 1000) : 0
+      delivery: Math.random() > 0.8 ? Math.round(Math.random() * 1000) : 0,
+      shiftType: worked ? 'full' : (isHours ? 'half' : undefined)
     };
   });
 }
@@ -80,6 +95,29 @@ export const fetchSalaryData = async (month: string, year: string): Promise<Mont
   // Here we would typically make an API call like:
   // const response = await fetch(`/api/sheets?month=${month}&year=${year}`);
   // const data = await response.json();
+  
+  // Try to get the shifts count data from localStorage
+  const shiftsData = getShiftsCountData();
+  
+  // If we have shifts data for the current month, merge it with the mock data
+  if (shiftsData && shiftsData.month === month && shiftsData.year === year) {
+    // Map shifts count to the mock data employees
+    const updatedEmployees = mockAprilData.employees.map(employee => {
+      const employeeShifts = shiftsData.employees.find(e => e.name === employee.name);
+      if (employeeShifts) {
+        return {
+          ...employee,
+          shiftCount: employeeShifts.shiftCount
+        };
+      }
+      return employee;
+    });
+    
+    return {
+      ...mockAprilData,
+      employees: updatedEmployees
+    };
+  }
   
   return mockAprilData;
 };
@@ -95,11 +133,13 @@ export const calculateSalary = (employee: EmployeeSalary, revenues: number[], co
     
     // Base rate for showing up to work
     if (shift.worked) {
-      dailySalary += constants.baseRate;
+      // Adjust base rate based on shift type (full or half)
+      const baseRate = shift.shiftType === 'half' ? constants.baseRate / 2 : constants.baseRate;
+      dailySalary += baseRate;
       
-      // Percentage from revenue
-      if (revenue > 0) {
-        dailySalary += revenue * constants.percentageBelow;
+      // Percentage from revenue - 5% from revenue starting from 7000
+      if (revenue > constants.revenueThreshold) {
+        dailySalary += constants.percentageBelow * (revenue - constants.revenueThreshold);
       }
     }
     

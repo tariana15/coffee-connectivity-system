@@ -116,6 +116,7 @@ const Salary = () => {
                       employees={calculatedData}
                       salaryField="monthTotal"
                       formatCurrency={formatCurrency}
+                      showShiftCount={true}
                     />
                   </TabsContent>
                 </>
@@ -130,8 +131,9 @@ const Salary = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-2 text-sm">
-              <p>• За выход на смену (раб): <strong>2300₽</strong></p>
-              <p>• Процент от выручки: <strong>5%</strong></p>
+              <p>• За выход на смену (полный день): <strong>2300₽</strong></p>
+              <p>• За выход на смену (пол дня): <strong>1150₽</strong></p>
+              <p>• Процент от выручки: <strong>5%</strong> от суммы выше 7000₽</p>
               <p>• Оплата за час дополнительной работы: <strong>250₽</strong></p>
               <p>• За доставку: <strong>36%</strong> от суммы доставки</p>
             </div>
@@ -146,15 +148,22 @@ interface SalaryTableProps {
   employees: EmployeeSalary[];
   salaryField: keyof Pick<EmployeeSalary, 'firstHalfTotal' | 'secondHalfTotal' | 'monthTotal'>;
   formatCurrency: (amount: number) => string;
+  showShiftCount?: boolean;
 }
 
-const SalaryTable: React.FC<SalaryTableProps> = ({ employees, salaryField, formatCurrency }) => {
+const SalaryTable: React.FC<SalaryTableProps> = ({ 
+  employees, 
+  salaryField, 
+  formatCurrency,
+  showShiftCount = false 
+}) => {
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="w-[200px]">Сотрудник</TableHead>
+            {showShiftCount && <TableHead>Кол-во смен</TableHead>}
             <TableHead className="text-right">Зарплата</TableHead>
           </TableRow>
         </TableHeader>
@@ -162,6 +171,9 @@ const SalaryTable: React.FC<SalaryTableProps> = ({ employees, salaryField, forma
           {employees.map((employee) => (
             <TableRow key={employee.name}>
               <TableCell className="font-medium">{employee.name}</TableCell>
+              {showShiftCount && (
+                <TableCell>{employee.shiftCount || employee.shifts.filter(s => s.worked).length}</TableCell>
+              )}
               <TableCell className="text-right">{formatCurrency(employee[salaryField])}</TableCell>
             </TableRow>
           ))}
