@@ -52,16 +52,21 @@ const RecipeCards = () => {
               return { name, amount, unit };
             });
           
-          // Используем первую колонку (#Вид напитка) для определения категории
+          // Использовать первую колонку (#Вид напитка) напрямую для категории
+          const drinkType = recipe["#Вид напитка"];
           let category = "other";
-          const drinkType = recipe["#Вид напитка"].toLowerCase();
           
-          if (drinkType.includes("кофе") || drinkType.includes("классические")) {
+          // Фильтруем только напитки (исключаем десерты и прочее)
+          if (drinkType.toLowerCase().includes("кофе") || 
+              drinkType.toLowerCase().includes("классические")) {
             category = "coffee";
-          } else if (drinkType.includes("чай")) {
+          } else if (drinkType.toLowerCase().includes("чай")) {
             category = "tea";
-          } else if (drinkType.includes("десерт") || drinkType.includes("выпечка")) {
-            category = "dessert";
+          } else if (drinkType.toLowerCase().includes("авторский") || 
+                     drinkType.toLowerCase().includes("сок")) {
+            category = "author";
+          } else if (drinkType.toLowerCase().includes("лимонад")) {
+            category = "lemonade";
           }
           
           return {
@@ -71,7 +76,13 @@ const RecipeCards = () => {
           };
         });
         
-        setRecipes(processedRecipes);
+        // Фильтруем только напитки (исключаем десерты и прочее)
+        const drinkRecipes = processedRecipes.filter(recipe => 
+          !recipe["#Вид напитка"].toLowerCase().includes("десерт") && 
+          !recipe["#Вид напитка"].toLowerCase().includes("выпечка")
+        );
+        
+        setRecipes(drinkRecipes);
       } catch (err) {
         setError("Ошибка при загрузке техкарты");
         console.error(err);
@@ -103,13 +114,14 @@ const RecipeCards = () => {
     );
   }
 
-  const categories = ["all", "coffee", "tea", "dessert", "other"];
+  // Обновленные категории только для напитков
+  const categories = ["all", "coffee", "tea", "author", "lemonade"];
   const categoryNames = {
     all: "Все",
     coffee: "Кофе",
     tea: "Чай", 
-    dessert: "Десерты",
-    other: "Прочее"
+    author: "Авторские",
+    lemonade: "Лимонады"
   };
 
   const filteredRecipes = activeCategory === "all" 
@@ -148,11 +160,12 @@ const RecipeCards = () => {
                     className={`
                       ${recipe.category === 'coffee' ? 'bg-purple-100 text-purple-800' : ''}
                       ${recipe.category === 'tea' ? 'bg-green-100 text-green-800' : ''}
-                      ${recipe.category === 'dessert' ? 'bg-orange-100 text-orange-800' : ''}
+                      ${recipe.category === 'author' ? 'bg-orange-100 text-orange-800' : ''}
+                      ${recipe.category === 'lemonade' ? 'bg-blue-100 text-blue-800' : ''}
                       ${recipe.category === 'other' ? 'bg-gray-100 text-gray-800' : ''}
                     `}
                   >
-                    {categoryNames[recipe.category as keyof typeof categoryNames]}
+                    {recipe["#Вид напитка"]}
                   </Badge>
                 </div>
               </CardHeader>

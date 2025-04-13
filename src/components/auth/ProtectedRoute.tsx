@@ -19,7 +19,10 @@ const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  // Allow managers to access owner routes
+  if (allowedRoles && 
+      !allowedRoles.includes(user.role) && 
+      !(user.role === "manager" && allowedRoles.includes("owner"))) {
     return <Navigate to="/dashboard" replace />;
   }
 

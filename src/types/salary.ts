@@ -66,3 +66,8 @@ export interface SalesData {
     category: string;
   }[];
 }
+
+export interface SalarySettings {
+  shopName: string;
+  constants: SalaryConstants;
+}

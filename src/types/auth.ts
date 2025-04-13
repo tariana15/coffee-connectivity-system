@@ -17,4 +17,6 @@ export interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   register: (userData: Omit<User, "id"> & { password: string }) => Promise<void>;
+  addEmployee: (userData: Omit<User, "id" | "coffeeShopName"> & { password: string }) => Promise<void>;
+  getShopEmployees: () => Promise<User[]>;
 }

@@ -1,10 +1,8 @@
 
-import { MonthlyData, EmployeeSalary, SalaryConstants, EmployeeShift } from "@/types/salary";
+import { MonthlyData, EmployeeSalary, SalaryConstants, EmployeeShift, SalarySettings } from "@/types/salary";
 
-// Google Sheets API endpoint would typically go here
-// For demo purposes, we'll use mock data based on the spreadsheet image
-
-const SALARY_CONSTANTS: SalaryConstants = {
+// Default salary constants
+const DEFAULT_SALARY_CONSTANTS: SalaryConstants = {
   baseRate: 2300,
   hourlyRate: 250,
   revenueThreshold: 7000,
@@ -137,7 +135,7 @@ export const calculateSalary = (employee: EmployeeSalary, revenues: number[], co
       const baseRate = shift.shiftType === 'half' ? constants.baseRate / 2 : constants.baseRate;
       dailySalary += baseRate;
       
-      // Percentage from revenue - 5% from revenue starting from 7000
+      // Percentage from revenue - percentage from revenue above threshold
       if (revenue > constants.revenueThreshold) {
         dailySalary += constants.percentageBelow * (revenue - constants.revenueThreshold);
       }
@@ -169,7 +167,54 @@ export const calculateSalary = (employee: EmployeeSalary, revenues: number[], co
   };
 };
 
-// Function to get salary constants
-export const getSalaryConstants = (): SalaryConstants => {
-  return SALARY_CONSTANTS;
+// Function to save salary settings for a shop
+export const saveSalarySettings = (shopName: string, constants: SalaryConstants): void => {
+  try {
+    // Get existing settings
+    const settingsData = localStorage.getItem('coffeeShopSalarySettings');
+    let allSettings: SalarySettings[] = settingsData ? JSON.parse(settingsData) : [];
+    
+    // Find if settings for this shop already exist
+    const shopIndex = allSettings.findIndex(setting => setting.shopName === shopName);
+    
+    if (shopIndex >= 0) {
+      // Update existing settings
+      allSettings[shopIndex].constants = constants;
+    } else {
+      // Add new settings
+      allSettings.push({
+        shopName,
+        constants
+      });
+    }
+    
+    // Save back to localStorage
+    localStorage.setItem('coffeeShopSalarySettings', JSON.stringify(allSettings));
+  } catch (error) {
+    console.error("Error saving salary settings:", error);
+    throw error;
+  }
+};
+
+// Function to get salary constants for a specific shop
+export const getSalaryConstants = (shopName?: string): SalaryConstants => {
+  try {
+    if (!shopName) {
+      return DEFAULT_SALARY_CONSTANTS;
+    }
+    
+    // Get settings from localStorage
+    const settingsData = localStorage.getItem('coffeeShopSalarySettings');
+    if (!settingsData) {
+      return DEFAULT_SALARY_CONSTANTS;
+    }
+    
+    const allSettings: SalarySettings[] = JSON.parse(settingsData);
+    const shopSettings = allSettings.find(setting => setting.shopName === shopName);
+    
+    return shopSettings?.constants || DEFAULT_SALARY_CONSTANTS;
+  } catch (error) {
+    console.error("Error retrieving salary constants:", error);
+    return DEFAULT_SALARY_CONSTANTS;
+  }
 };
