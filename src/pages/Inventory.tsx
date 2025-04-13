@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { ProductCategory, ProductIngredient } from "@/types/salary";
+import { 
+  ResponsiveContainer, 
+  PieChart, 
+  Pie, 
+  Cell,
+  Tooltip,
+  Legend
+} from "recharts";
 
 interface InventoryItem {
   id: number;
@@ -31,7 +38,6 @@ const Inventory = () => {
   const [activeTab, setActiveTab] = useState("inventory");
   const [categories, setCategories] = useState<ProductCategory[]>(DEFAULT_CATEGORIES);
   
-  // Demo data for inventory items
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([
     {
       id: 1,
@@ -115,7 +121,6 @@ const Inventory = () => {
   };
 
   const updateStockAfterSale = (usedIngredients: ProductIngredient[]) => {
-    // This function would be called when a sale is made
     const updatedItems = [...inventoryItems];
     
     usedIngredients.forEach(usedItem => {
@@ -129,7 +134,6 @@ const Inventory = () => {
           amount: Math.max(0, updatedItems[itemIndex].amount - usedItem.amount)
         };
         
-        // Update status based on new amount
         if (updatedItems[itemIndex].amount === 0) {
           updatedItems[itemIndex].status = "critical";
         } else if (updatedItems[itemIndex].amount <= 2) {

@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import recipeData from "../../techcard/texcard.json";
 import { ProductIngredient } from "@/types/salary";
@@ -27,9 +27,7 @@ const RecipeCards = () => {
       try {
         setLoading(true);
         
-        // Process the recipe data to extract ingredients and assign categories
         const processedRecipes = recipeData.map((recipe: Recipe) => {
-          // Parse ingredients text into structured data
           const ingredientsText = recipe["#Ингредиенты"];
           const ingredientsList: ProductIngredient[] = ingredientsText
             .split(",")
@@ -53,7 +51,6 @@ const RecipeCards = () => {
               return { name, amount, unit };
             });
           
-          // Determine category based on the drink type
           let category = "other";
           const drinkType = recipe["#Вид напитка"].toLowerCase();
           
@@ -104,7 +101,6 @@ const RecipeCards = () => {
     );
   }
 
-  // Get unique categories from recipes
   const categories = ["all", "coffee", "tea", "dessert", "other"];
   const categoryNames = {
     all: "Все",
@@ -114,7 +110,6 @@ const RecipeCards = () => {
     other: "Прочее"
   };
 
-  // Filter recipes by selected category
   const filteredRecipes = activeCategory === "all" 
     ? recipes 
     : recipes.filter(recipe => recipe.category === activeCategory);
