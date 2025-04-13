@@ -32,3 +32,37 @@ export interface MonthlyData {
   revenues: number[];
   employees: EmployeeSalary[];
 }
+
+export interface ProductCategory {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface ProductIngredient {
+  name: string;
+  amount: number;
+  unit: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  ingredients: ProductIngredient[];
+}
+
+export interface SalesData {
+  categories: {
+    name: string;
+    value: number;
+    color: string;
+  }[];
+  products: {
+    id: string;
+    name: string;
+    quantity: number;
+    category: string;
+  }[];
+}

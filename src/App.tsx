@@ -23,6 +23,7 @@ import Bonuses from "./pages/Bonuses";
 import Salary from "./pages/Salary";
 import Chat from "./pages/Chat";
 import Index from "./pages/Index";
+import SalesAnalytics from "./pages/SalesAnalytics";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,14 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={["owner"]}>
                     <Analytics />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/sales-analytics" 
+                element={
+                  <ProtectedRoute allowedRoles={["owner"]}>
+                    <SalesAnalytics />
                   </ProtectedRoute>
                 } 
               />
