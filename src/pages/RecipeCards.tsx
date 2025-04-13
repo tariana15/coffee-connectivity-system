@@ -52,20 +52,19 @@ const RecipeCards = () => {
               return { name, amount, unit };
             });
           
-          // Использовать первую колонку (#Вид напитка) напрямую для категории
+          // Более точная категоризация на основе "#Вид напитка"
           const drinkType = recipe["#Вид напитка"];
           let category = "other";
           
-          // Фильтруем только напитки (исключаем десерты и прочее)
           if (drinkType.toLowerCase().includes("кофе") || 
               drinkType.toLowerCase().includes("классические")) {
             category = "coffee";
           } else if (drinkType.toLowerCase().includes("чай")) {
             category = "tea";
-          } else if (drinkType.toLowerCase().includes("авторский") || 
-                     drinkType.toLowerCase().includes("сок")) {
+          } else if (drinkType.toLowerCase().includes("авторский напиток")) {
             category = "author";
-          } else if (drinkType.toLowerCase().includes("лимонад")) {
+          } else if (drinkType.toLowerCase().includes("лимонад") || 
+                    drinkType.toLowerCase().includes("авторский лимонад")) {
             category = "lemonade";
           }
           
@@ -138,9 +137,14 @@ const RecipeCards = () => {
           onValueChange={setActiveCategory} 
           className="mb-6"
         >
-          <TabsList className="w-full grid grid-cols-5">
+          {/* Увеличиваем ширину вкладок, чтобы текст не накладывался */}
+          <TabsList className="w-full grid grid-cols-5 min-w-full">
             {categories.map(category => (
-              <TabsTrigger key={category} value={category}>
+              <TabsTrigger 
+                key={category} 
+                value={category}
+                className="px-4 py-2 whitespace-nowrap"
+              >
                 {categoryNames[category as keyof typeof categoryNames]}
               </TabsTrigger>
             ))}
