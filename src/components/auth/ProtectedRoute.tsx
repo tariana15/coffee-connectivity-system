@@ -1,8 +1,10 @@
-import { Navigate, Outlet } from "react-router-dom";
+
+import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { UserRole } from "@/types/auth";
 
 interface ProtectedRouteProps {
-  allowedRoles?: string[];
+  allowedRoles?: UserRole[];
   children?: React.ReactNode;
 }
 
@@ -21,7 +23,7 @@ const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return children ? <>{children}</> : <Outlet />;
+  return children ? <>{children}</> : null;
 };
 
 export default ProtectedRoute;

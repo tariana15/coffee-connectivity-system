@@ -22,15 +22,18 @@ import { fetchSalaryData, calculateSalary, getSalaryConstants } from "@/services
 import { MonthlyData, EmployeeSalary } from "@/types/salary";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Salary = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(format(new Date(), 'MMMM', { locale: ru }));
   const [currentYear, setCurrentYear] = useState(format(new Date(), 'yyyy'));
   const [salaryData, setSalaryData] = useState<MonthlyData | null>(null);
   const [calculatedData, setCalculatedData] = useState<EmployeeSalary[]>([]);
   const [activeTab, setActiveTab] = useState("firstHalf");
+  const isOwnerOrManager = user?.role === "owner" || user?.role === "manager";
 
   useEffect(() => {
     const loadSalaryData = async () => {
@@ -69,6 +72,11 @@ const Salary = () => {
     }).format(amount);
   };
 
+  // Для сотрудников показываем только их данные
+  const filteredData = isOwnerOrManager 
+    ? calculatedData 
+    : calculatedData.filter(emp => emp.name === user?.name);
+
   return (
     <MainLayout>
       <div className="space-y-4">
@@ -78,7 +86,9 @@ const Salary = () => {
           <CardHeader className="pb-2">
             <CardTitle>{salaryData?.month} {salaryData?.year}</CardTitle>
             <CardDescription>
-              Информация о заработной плате сотрудников
+              {isOwnerOrManager 
+                ? "Информация о заработной плате сотрудников"
+                : "Ваша заработная плата"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -97,23 +107,25 @@ const Salary = () => {
                 <>
                   <TabsContent value="firstHalf">
                     <SalaryTable 
-                      employees={calculatedData}
+                      employees={filteredData}
                       salaryField="firstHalfTotal"
                       formatCurrency={formatCurrency}
+                      showShiftCount={true}
                     />
                   </TabsContent>
                   
                   <TabsContent value="secondHalf">
                     <SalaryTable 
-                      employees={calculatedData}
+                      employees={filteredData}
                       salaryField="secondHalfTotal"
                       formatCurrency={formatCurrency}
+                      showShiftCount={true}
                     />
                   </TabsContent>
                   
                   <TabsContent value="month">
                     <SalaryTable 
-                      employees={calculatedData}
+                      employees={filteredData}
                       salaryField="monthTotal"
                       formatCurrency={formatCurrency}
                       showShiftCount={true}

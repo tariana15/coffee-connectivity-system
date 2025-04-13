@@ -40,9 +40,9 @@ const Register = () => {
         password,
         role,
         coffeeShopName,
-        employeeCount: role === "owner" ? 0 : undefined,
+        employeeCount: role === "owner" || role === "manager" ? 0 : undefined,
       });
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       toast({
         title: "Ошибка регистрации",
@@ -60,7 +60,7 @@ const Register = () => {
         <div className="flex flex-col items-center px-6 py-8">
           <div className="mb-6 flex flex-col items-center">
             <img 
-              src="/public/lovable-uploads/665a6ff0-b690-476a-958c-5788895aea23.png" 
+              src="/public/lovable-uploads/89979109-cb3c-45e7-8df3-11753334b10b.png" 
               alt="Coffee Dinosaur" 
               className="h-24 w-24 mb-4"
             />
@@ -123,13 +123,19 @@ const Register = () => {
               <RadioGroup
                 value={role}
                 onValueChange={(value) => setRole(value as UserRole)}
-                className="flex space-x-6"
+                className="flex flex-wrap gap-4"
                 defaultValue="owner"
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="owner" id="owner" />
                   <Label htmlFor="owner" className="cursor-pointer">
                     Владелец
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="manager" id="manager" />
+                  <Label htmlFor="manager" className="cursor-pointer">
+                    Менеджер
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">

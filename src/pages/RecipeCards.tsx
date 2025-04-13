@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,10 +52,11 @@ const RecipeCards = () => {
               return { name, amount, unit };
             });
           
+          // Используем первую колонку (#Вид напитка) для определения категории
           let category = "other";
           const drinkType = recipe["#Вид напитка"].toLowerCase();
           
-          if (drinkType.includes("кофе")) {
+          if (drinkType.includes("кофе") || drinkType.includes("классические")) {
             category = "coffee";
           } else if (drinkType.includes("чай")) {
             category = "tea";

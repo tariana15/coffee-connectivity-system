@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { AuthContextType, User, UserRole } from "@/types/auth";
 
@@ -21,6 +22,15 @@ const demoUsers: User[] = [
     role: "employee" as UserRole,
     avatarUrl: "/avatars/employee.png",
     coffeeShopName: "Уютная Кофейня"
+  },
+  {
+    id: "3",
+    name: "Менеджер Иван",
+    email: "manager@example.com",
+    role: "manager" as UserRole,
+    avatarUrl: "/avatars/owner.png",
+    coffeeShopName: "Уютная Кофейня",
+    employeeCount: 3
   }
 ];
 
@@ -68,8 +78,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const allUsers = localStorage.getItem("coffeeShopUsers");
       let coffeeShopUsers = allUsers ? JSON.parse(allUsers) : [];
       
+      // Assign a default avatar URL based on role
+      const avatarUrl = userData.avatarUrl || 
+        (userData.role === "owner" || userData.role === "manager" ? "/avatars/owner.png" : "/avatars/employee.png");
+      
       const newUser: User = {
         ...userData,
+        avatarUrl,
         id: Math.random().toString(36).substring(2, 11)
       };
       
