@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { AuthContextType, User, UserRole } from "@/types/auth";
 
@@ -136,7 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const addEmployee = async (userData: Omit<User, "id" | "coffeeShopName"> & { password: string }) => {
+  const addEmployee = async (userData: Omit<User, "id" | "coffeeShopName"> & { password: string }): Promise<User> => {
     setLoading(true);
     try {
       if (!user) {

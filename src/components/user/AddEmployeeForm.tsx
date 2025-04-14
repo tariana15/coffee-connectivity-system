@@ -30,7 +30,7 @@ const AddEmployeeForm: React.FC<{ onSuccess?: () => void }> = ({ onSuccess }) =>
 
     setIsSubmitting(true);
     try {
-      await addEmployee({
+      const newEmployee = await addEmployee({
         name,
         email,
         password,
@@ -39,7 +39,7 @@ const AddEmployeeForm: React.FC<{ onSuccess?: () => void }> = ({ onSuccess }) =>
       
       toast({
         title: "Успешно",
-        description: `Сотрудник ${name} успешно добавлен`,
+        description: `Сотрудник ${newEmployee.name} успешно добавлен`,
       });
       
       // Reset form
