@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,10 +21,12 @@ import {
   Area
 } from "recharts";
 import { SalesData } from "@/types/salary";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const SalesAnalytics = () => {
   const [period, setPeriod] = useState("today");
   const [activeTab, setActiveTab] = useState("categories");
+  const isMobile = useIsMobile();
   
   const [salesData, setSalesData] = useState<{[key: string]: SalesData}>({
     today: {
@@ -84,7 +85,6 @@ const SalesAnalytics = () => {
     }
   });
 
-  // Данные для графика выручки
   const revenueData = {
     today: [
       { time: "9:00", revenue: 3500 },
@@ -117,7 +117,6 @@ const SalesAnalytics = () => {
     ]
   };
 
-  // Данные для метрик
   const metricsData = {
     today: {
       revenue: "83000 ₽",
@@ -139,23 +138,21 @@ const SalesAnalytics = () => {
     }
   };
 
-  // Текущие данные на основе выбранного периода
   const currentSalesData = salesData[period];
   const currentRevenueData = revenueData[period as keyof typeof revenueData];
   const currentMetrics = metricsData[period as keyof typeof metricsData];
 
-  // Сортировка продуктов по количеству для столбчатой диаграммы
   const sortedProducts = [...currentSalesData.products]
     .sort((a, b) => b.quantity - a.quantity)
     .slice(0, 5);
 
   return (
     <MainLayout>
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex justify-between items-center">
-          <h1 className="text-xl font-semibold">Аналитика продаж</h1>
+          <h1 className="text-lg font-semibold">Аналитика продаж</h1>
           <Select value={period} onValueChange={setPeriod}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className={`${isMobile ? 'w-28' : 'w-32'}`}>
               <SelectValue placeholder="Период" />
             </SelectTrigger>
             <SelectContent>
@@ -168,58 +165,58 @@ const SalesAnalytics = () => {
 
         <div className="grid grid-cols-2 gap-2">
           <Card className="metric-card">
-            <CardHeader className="p-3 pb-0">
+            <CardHeader className={`${isMobile ? 'p-2 pb-0' : 'p-3 pb-0'}`}>
               <CardDescription>Выручка</CardDescription>
             </CardHeader>
-            <CardContent className="p-3 pt-0">
-              <p className="text-xl font-bold">{currentMetrics.revenue}</p>
+            <CardContent className={`${isMobile ? 'p-2 pt-0' : 'p-3 pt-0'}`}>
+              <p className="text-lg font-bold">{currentMetrics.revenue}</p>
             </CardContent>
           </Card>
           <Card className="metric-card">
-            <CardHeader className="p-3 pb-0">
+            <CardHeader className={`${isMobile ? 'p-2 pb-0' : 'p-3 pb-0'}`}>
               <CardDescription>Прибыль</CardDescription>
             </CardHeader>
-            <CardContent className="p-3 pt-0">
-              <p className="text-xl font-bold">{currentMetrics.profit}</p>
+            <CardContent className={`${isMobile ? 'p-2 pt-0' : 'p-3 pt-0'}`}>
+              <p className="text-lg font-bold">{currentMetrics.profit}</p>
             </CardContent>
           </Card>
           <Card className="metric-card">
-            <CardHeader className="p-3 pb-0">
+            <CardHeader className={`${isMobile ? 'p-2 pb-0' : 'p-3 pb-0'}`}>
               <CardDescription>Средний чек</CardDescription>
             </CardHeader>
-            <CardContent className="p-3 pt-0">
-              <p className="text-xl font-bold">{currentMetrics.averageCheck}</p>
+            <CardContent className={`${isMobile ? 'p-2 pt-0' : 'p-3 pt-0'}`}>
+              <p className="text-lg font-bold">{currentMetrics.averageCheck}</p>
             </CardContent>
           </Card>
           <Card className="metric-card">
-            <CardHeader className="p-3 pb-0">
+            <CardHeader className={`${isMobile ? 'p-2 pb-0' : 'p-3 pb-0'}`}>
               <CardDescription>Кол-во чеков</CardDescription>
             </CardHeader>
-            <CardContent className="p-3 pt-0">
-              <p className="text-xl font-bold">{currentMetrics.checks}</p>
+            <CardContent className={`${isMobile ? 'p-2 pt-0' : 'p-3 pt-0'}`}>
+              <p className="text-lg font-bold">{currentMetrics.checks}</p>
             </CardContent>
           </Card>
         </div>
           
         <Card>
-          <CardHeader>
-            <CardTitle>Динамика выручки</CardTitle>
-            <CardDescription>
+          <CardHeader className={`${isMobile ? 'p-3 pb-1' : 'p-4 pb-2'}`}>
+            <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'}`}>Динамика выручки</CardTitle>
+            <CardDescription className="text-xs">
               График выручки за {period === "today" ? "день" : period === "week" ? "неделю" : "месяц"}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-60 w-full">
+          <CardContent className={`${isMobile ? 'p-2' : 'p-4'}`}>
+            <div className={`${isMobile ? 'h-48' : 'h-60'} w-full`}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={currentRevenueData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  margin={isMobile ? { top: 10, right: 10, left: 10, bottom: 0 } : { top: 20, right: 30, left: 20, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="time" />
-                  <YAxis />
+                  <XAxis dataKey="time" tick={{ fontSize: isMobile ? 10 : 12 }} />
+                  <YAxis tick={{ fontSize: isMobile ? 10 : 12 }} />
                   <Tooltip formatter={(value) => [`${value} ₽`, "Выручка"]} />
-                  <Legend />
+                  <Legend wrapperStyle={{ fontSize: isMobile ? 10 : 12 }} />
                   <Area 
                     type="monotone" 
                     dataKey="revenue" 
@@ -234,7 +231,7 @@ const SalesAnalytics = () => {
           </CardContent>
         </Card>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="categories">По категориям</TabsTrigger>
             <TabsTrigger value="products">По продуктам</TabsTrigger>
@@ -242,23 +239,23 @@ const SalesAnalytics = () => {
           
           <TabsContent value="categories">
             <Card>
-              <CardHeader>
-                <CardTitle>Распределение продаж по категориям</CardTitle>
-                <CardDescription>
-                  Процентное соотношение категорий в общей структуре продаж
+              <CardHeader className={`${isMobile ? 'p-3 pb-1' : 'p-4 pb-2'}`}>
+                <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'}`}>Распределение продаж</CardTitle>
+                <CardDescription className="text-xs">
+                  Процентное соотношение категорий
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="h-[300px] w-full">
+              <CardContent className={`${isMobile ? 'p-2' : 'p-4'}`}>
+                <div className={`${isMobile ? 'h-[250px]' : 'h-[300px]'} w-full`}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={currentSalesData.categories}
                         cx="50%"
                         cy="50%"
-                        labelLine={true}
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={100}
+                        labelLine={!isMobile}
+                        label={({ name, percent }) => isMobile ? `${(percent * 100).toFixed(0)}%` : `${name}: ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={isMobile ? 80 : 100}
                         fill="#8884d8"
                         dataKey="value"
                       >
@@ -267,7 +264,7 @@ const SalesAnalytics = () => {
                         ))}
                       </Pie>
                       <Tooltip formatter={(value) => `${value}%`} />
-                      <Legend />
+                      <Legend layout={isMobile ? "horizontal" : "vertical"} verticalAlign={isMobile ? "bottom" : "middle"} align={isMobile ? "center" : "right"} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -277,27 +274,27 @@ const SalesAnalytics = () => {
           
           <TabsContent value="products">
             <Card>
-              <CardHeader>
-                <CardTitle>Топ продаваемых товаров</CardTitle>
-                <CardDescription>
-                  Наиболее популярные товары по количеству продаж
+              <CardHeader className={`${isMobile ? 'p-3 pb-1' : 'p-4 pb-2'}`}>
+                <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'}`}>Топ продаваемых товаров</CardTitle>
+                <CardDescription className="text-xs">
+                  Наиболее популярные товары
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="h-[300px] w-full">
+              <CardContent className={`${isMobile ? 'p-2' : 'p-4'}`}>
+                <div className={`${isMobile ? 'h-[250px]' : 'h-[300px]'} w-full`}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={sortedProducts}
                       layout="vertical"
-                      margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
+                      margin={isMobile ? { top: 5, right: 10, left: 80, bottom: 5 } : { top: 20, right: 30, left: 100, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" />
+                      <XAxis type="number" tick={{ fontSize: isMobile ? 10 : 12 }} />
                       <YAxis 
                         dataKey="name" 
                         type="category" 
-                        tick={{ fontSize: 14 }}
-                        width={100}
+                        tick={{ fontSize: isMobile ? 10 : 14 }}
+                        width={isMobile ? 80 : 100}
                       />
                       <Tooltip />
                       <Bar 
