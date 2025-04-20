@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import recipeData from "../../techcard/texcard.json";
 import { ProductIngredient } from "@/types/salary";
@@ -54,7 +53,6 @@ const RecipeCards = () => {
               return { name, amount, unit };
             });
           
-          // Fixed category logic - directly use the drink type for categorization
           const drinkType = recipe["#Вид напитка"].toLowerCase();
           let category = "other";
           
@@ -77,7 +75,6 @@ const RecipeCards = () => {
           };
         });
         
-        // Фильтруем только напитки (исключаем десерты и прочее)
         const drinkRecipes = processedRecipes.filter(recipe => 
           !recipe["#Вид напитка"].toLowerCase().includes("десерт") && 
           !recipe["#Вид напитка"].toLowerCase().includes("выпечка")
@@ -115,7 +112,6 @@ const RecipeCards = () => {
     );
   }
 
-  // Обновленные категории с учетом изменений
   const categories = ["all", "coffee", "tea", "nocoffee", "lemonade", "author"];
   const categoryNames = {
     all: "Все",
@@ -135,70 +131,63 @@ const RecipeCards = () => {
       <div className="container mx-auto py-2">
         <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold mb-4`}>Техкарта напитков</h1>
         
-        <Tabs 
-          value={activeCategory} 
-          onValueChange={setActiveCategory} 
-          className="mb-4"
-        >
-          {/* Адаптивное отображение вкладок */}
-          <TabsList className={`grid ${isMobile ? 'grid-cols-3 gap-1' : 'grid-cols-6'} w-full`}>
-            {categories.map((category, index) => (
-              <TabsTrigger 
-                key={category} 
-                value={category}
-                className={`whitespace-nowrap px-2 py-1 text-${isMobile ? 'xs' : 'sm'}`}
-                // Используем scroll для мобильных, чтобы свайпать категории
-                style={isMobile && index > 2 ? { display: activeCategory === category ? 'block' : 'none' } : {}}
-              >
-                {categoryNames[category as keyof typeof categoryNames]}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          
-          {categories.map(category => (
-            <TabsContent key={category} value={category} className="mt-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {filteredRecipes.map((recipe, index) => (
-                  <Card key={index} className="hover:shadow-lg transition-shadow">
-                    <CardHeader className={isMobile ? 'p-3' : 'p-4'}>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className={isMobile ? 'text-base' : 'text-lg'}>{recipe["#Название"]}</CardTitle>
-                          <CardDescription className="text-xs">{recipe["#Вид напитка"]}</CardDescription>
-                        </div>
-                        <Badge 
-                          className={`
-                            ${recipe.category === 'coffee' ? 'bg-green-100 text-green-800' : ''}
-                            ${recipe.category === 'tea' ? 'bg-blue-100 text-blue-800' : ''}
-                            ${recipe.category === 'nocoffee' ? 'bg-orange-100 text-orange-800' : ''}
-                            ${recipe.category === 'lemonade' ? 'bg-yellow-100 text-yellow-800' : ''}
-                            ${recipe.category === 'author' ? 'bg-purple-100 text-purple-800' : ''}
-                            ${recipe.category === 'other' ? 'bg-gray-100 text-gray-800' : ''}
-                            ${isMobile ? 'text-xs px-1 py-0' : ''}
-                          `}
-                        >
-                          {categoryNames[recipe.category as keyof typeof categoryNames] || recipe["#Вид напитка"]}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className={isMobile ? 'p-3 pt-0' : 'p-4'}>
-                      <div className="space-y-3">
-                        <div>
-                          <h3 className="font-semibold mb-1 text-sm">Ингредиенты:</h3>
-                          <p className={`${isMobile ? 'text-xs' : 'text-sm'}`}>{recipe["#Ингредиенты"]}</p>
-                        </div>
-                        <div>
-                          <h3 className="font-semibold mb-1 text-sm">Приготовление:</h3>
-                          <p className={`${isMobile ? 'text-xs' : 'text-sm'} whitespace-pre-line`}>{recipe["#Приготовление"]}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
+        <div className="w-full max-w-xs mb-4">
+          <Select 
+            value={activeCategory}
+            onValueChange={setActiveCategory}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Выберите категорию" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {categoryNames[category as keyof typeof categoryNames]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {filteredRecipes.map((recipe, index) => (
+            <Card key={index} className="hover:shadow-lg transition-shadow">
+              <CardHeader className={isMobile ? 'p-3' : 'p-4'}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className={isMobile ? 'text-base' : 'text-lg'}>{recipe["#Название"]}</CardTitle>
+                    <CardDescription className="text-xs">{recipe["#Вид напитка"]}</CardDescription>
+                  </div>
+                  <Badge 
+                    className={`
+                      ${recipe.category === 'coffee' ? 'bg-green-100 text-green-800' : ''}
+                      ${recipe.category === 'tea' ? 'bg-blue-100 text-blue-800' : ''}
+                      ${recipe.category === 'nocoffee' ? 'bg-orange-100 text-orange-800' : ''}
+                      ${recipe.category === 'lemonade' ? 'bg-yellow-100 text-yellow-800' : ''}
+                      ${recipe.category === 'author' ? 'bg-purple-100 text-purple-800' : ''}
+                      ${recipe.category === 'other' ? 'bg-gray-100 text-gray-800' : ''}
+                      ${isMobile ? 'text-xs px-1 py-0' : ''}
+                    `}
+                  >
+                    {categoryNames[recipe.category as keyof typeof categoryNames] || recipe["#Вид напитка"]}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className={isMobile ? 'p-3 pt-0' : 'p-4'}>
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-semibold mb-1 text-sm">Ингредиенты:</h3>
+                    <p className={`${isMobile ? 'text-xs' : 'text-sm'}`}>{recipe["#Ингредиенты"]}</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-1 text-sm">Приготовление:</h3>
+                    <p className={`${isMobile ? 'text-xs' : 'text-sm'} whitespace-pre-line`}>{recipe["#Приготовление"]}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           ))}
-        </Tabs>
+        </div>
       </div>
     </MainLayout>
   );
