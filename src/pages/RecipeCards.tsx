@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,7 +53,7 @@ const RecipeCards = () => {
               return { name, amount, unit };
             });
           
-          // Более точная категоризация на основе "#Вид напитка"
+          // Updated category logic
           const drinkType = recipe["#Вид напитка"];
           let category = "other";
           
@@ -68,7 +67,9 @@ const RecipeCards = () => {
           } else if (drinkType.toLowerCase().includes("лимонад") || 
                     drinkType.toLowerCase().includes("авторский лимонад")) {
             category = "lemonade";
-          } else if (drinkType.toLowerCase().includes("не кофе")) {
+          } else if (drinkType.toLowerCase().includes("не кофе") || 
+                     drinkType.toLowerCase().includes("какао") || 
+                     drinkType.toLowerCase().includes("матча")) {
             category = "nocoffee";
           }
           
@@ -117,14 +118,15 @@ const RecipeCards = () => {
     );
   }
 
-  // Обновленные категории в соответствии с данными из таблицы
-  const categories = ["all", "coffee", "tea", "nocoffee", "lemonade"];
+  // Обновленные категории с учетом изменений
+  const categories = ["all", "coffee", "tea", "nocoffee", "lemonade", "author"];
   const categoryNames = {
     all: "Все",
     coffee: "Кофе классический",
     tea: "Чай", 
     nocoffee: "Не кофе",
-    lemonade: "Лимонады"
+    lemonade: "Лимонады",
+    author: "Авторские напитки"
   };
 
   const filteredRecipes = activeCategory === "all" 
@@ -142,7 +144,7 @@ const RecipeCards = () => {
           className="mb-4"
         >
           {/* Адаптивное отображение вкладок */}
-          <TabsList className={`grid ${isMobile ? 'grid-cols-3 gap-1' : 'grid-cols-5'} w-full`}>
+          <TabsList className={`grid ${isMobile ? 'grid-cols-3 gap-1' : 'grid-cols-6'} w-full`}>
             {categories.map((category, index) => (
               <TabsTrigger 
                 key={category} 
@@ -155,46 +157,51 @@ const RecipeCards = () => {
               </TabsTrigger>
             ))}
           </TabsList>
-        </Tabs>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filteredRecipes.map((recipe, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow">
-              <CardHeader className={isMobile ? 'p-3' : 'p-4'}>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className={isMobile ? 'text-base' : 'text-lg'}>{recipe["#Название"]}</CardTitle>
-                    <CardDescription className="text-xs">{recipe["#Вид напитка"]}</CardDescription>
-                  </div>
-                  <Badge 
-                    className={`
-                      ${recipe.category === 'coffee' ? 'bg-green-100 text-green-800' : ''}
-                      ${recipe.category === 'tea' ? 'bg-blue-100 text-blue-800' : ''}
-                      ${recipe.category === 'nocoffee' ? 'bg-orange-100 text-orange-800' : ''}
-                      ${recipe.category === 'lemonade' ? 'bg-yellow-100 text-yellow-800' : ''}
-                      ${recipe.category === 'other' ? 'bg-gray-100 text-gray-800' : ''}
-                      ${isMobile ? 'text-xs px-1 py-0' : ''}
-                    `}
-                  >
-                    {recipe["#Вид напитка"]}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className={isMobile ? 'p-3 pt-0' : 'p-4'}>
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="font-semibold mb-1 text-sm">Ингредиенты:</h3>
-                    <p className={`${isMobile ? 'text-xs' : 'text-sm'}`}>{recipe["#Ингредиенты"]}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1 text-sm">Приготовление:</h3>
-                    <p className={`${isMobile ? 'text-xs' : 'text-sm'} whitespace-pre-line`}>{recipe["#Приготовление"]}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          
+          {categories.map(category => (
+            <TabsContent key={category} value={category} className="mt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {filteredRecipes.map((recipe, index) => (
+                  <Card key={index} className="hover:shadow-lg transition-shadow">
+                    <CardHeader className={isMobile ? 'p-3' : 'p-4'}>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className={isMobile ? 'text-base' : 'text-lg'}>{recipe["#Название"]}</CardTitle>
+                          <CardDescription className="text-xs">{recipe["#Вид напитка"]}</CardDescription>
+                        </div>
+                        <Badge 
+                          className={`
+                            ${recipe.category === 'coffee' ? 'bg-green-100 text-green-800' : ''}
+                            ${recipe.category === 'tea' ? 'bg-blue-100 text-blue-800' : ''}
+                            ${recipe.category === 'nocoffee' ? 'bg-orange-100 text-orange-800' : ''}
+                            ${recipe.category === 'lemonade' ? 'bg-yellow-100 text-yellow-800' : ''}
+                            ${recipe.category === 'author' ? 'bg-purple-100 text-purple-800' : ''}
+                            ${recipe.category === 'other' ? 'bg-gray-100 text-gray-800' : ''}
+                            ${isMobile ? 'text-xs px-1 py-0' : ''}
+                          `}
+                        >
+                          {recipe["#Вид напитка"]}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className={isMobile ? 'p-3 pt-0' : 'p-4'}>
+                      <div className="space-y-3">
+                        <div>
+                          <h3 className="font-semibold mb-1 text-sm">Ингредиенты:</h3>
+                          <p className={`${isMobile ? 'text-xs' : 'text-sm'}`}>{recipe["#Ингредиенты"]}</p>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold mb-1 text-sm">Приготовление:</h3>
+                          <p className={`${isMobile ? 'text-xs' : 'text-sm'} whitespace-pre-line`}>{recipe["#Приготовление"]}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
           ))}
-        </div>
+        </Tabs>
       </div>
     </MainLayout>
   );
