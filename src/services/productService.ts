@@ -26,16 +26,19 @@ export const getProductsFromRecipes = (): Product[] => {
     // Skip if no name
     if (!name) return;
     
-    // Determine category
+    // Determine category - fixed logic to match with RecipeCards
     let category = "extra";
-    if (drinkType.toLowerCase().includes("кофе") || 
-        drinkType.toLowerCase().includes("классические")) {
+    const drinkTypeLower = drinkType.toLowerCase();
+    
+    if (drinkTypeLower.includes("кофе") && drinkTypeLower.includes("классический")) {
       category = "coffee";
-    } else if (drinkType.toLowerCase().includes("чай")) {
+    } else if (drinkTypeLower.includes("чай")) {
+      category = "nocoffee"; // чай goes in nocoffee category
+    } else if (drinkTypeLower.includes("не кофе")) {
       category = "nocoffee";
-    } else if (drinkType.toLowerCase().includes("авторский")) {
+    } else if (drinkTypeLower.includes("авторский")) {
       category = "author";
-    } else if (drinkType.toLowerCase().includes("лимонад")) {
+    } else if (drinkTypeLower.includes("лимонад")) {
       category = "lemonade";
     }
     

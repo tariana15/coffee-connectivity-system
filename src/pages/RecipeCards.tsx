@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,23 +54,19 @@ const RecipeCards = () => {
               return { name, amount, unit };
             });
           
-          // Updated category logic
-          const drinkType = recipe["#Вид напитка"];
+          // Fixed category logic - directly use the drink type for categorization
+          const drinkType = recipe["#Вид напитка"].toLowerCase();
           let category = "other";
           
-          if (drinkType.toLowerCase().includes("кофе") || 
-              drinkType.toLowerCase().includes("классические")) {
+          if (drinkType.includes("кофе") && drinkType.includes("классический")) {
             category = "coffee";
-          } else if (drinkType.toLowerCase().includes("чай")) {
+          } else if (drinkType.includes("чай")) {
             category = "tea";
-          } else if (drinkType.toLowerCase().includes("авторский напиток")) {
+          } else if (drinkType.includes("авторский напиток") || drinkType.includes("авторские напитки")) {
             category = "author";
-          } else if (drinkType.toLowerCase().includes("лимонад") || 
-                    drinkType.toLowerCase().includes("авторский лимонад")) {
+          } else if (drinkType.includes("лимонад") || drinkType.includes("авторский лимонад")) {
             category = "lemonade";
-          } else if (drinkType.toLowerCase().includes("не кофе") || 
-                     drinkType.toLowerCase().includes("какао") || 
-                     drinkType.toLowerCase().includes("матча")) {
+          } else if (drinkType.includes("не кофе")) {
             category = "nocoffee";
           }
           
@@ -180,7 +177,7 @@ const RecipeCards = () => {
                             ${isMobile ? 'text-xs px-1 py-0' : ''}
                           `}
                         >
-                          {recipe["#Вид напитка"]}
+                          {categoryNames[recipe.category as keyof typeof categoryNames] || recipe["#Вид напитка"]}
                         </Badge>
                       </div>
                     </CardHeader>
