@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,6 +8,9 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { Product, ProductCategory } from "@/types/salary";
 import { getAllProducts, productCategories } from "@/services/productService";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ImportProducts } from "@/components/import/ImportProducts";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 // Импорт данных о накладных для расчета себестоимости
 import invoiceData from "../../techcard/Nacladnay.json";
@@ -128,6 +130,13 @@ const Products = () => {
     setFilteredProducts(filtered);
   }, [activeCategory, searchQuery, products]);
 
+  const handleImportComplete = () => {
+    // Перезагружаем товары после импорта
+    const allProducts = getAllProducts();
+    setProducts(allProducts);
+    setFilteredProducts(allProducts);
+  };
+
   if (loading) {
     return (
       <MainLayout>
@@ -141,7 +150,21 @@ const Products = () => {
   return (
     <MainLayout>
       <div className="container mx-auto py-2">
-        <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold mb-4`}>Товары</h1>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>Товары</h1>
+          
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>Импорт товаров</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Импорт товаров из Google Sheets</DialogTitle>
+              </DialogHeader>
+              <ImportProducts onImportComplete={handleImportComplete} />
+            </DialogContent>
+          </Dialog>
+        </div>
         
         {/* Поле поиска */}
         <div className="relative mb-4">

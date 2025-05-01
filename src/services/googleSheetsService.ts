@@ -1,4 +1,3 @@
-
 import { MonthlyData, EmployeeSalary, SalaryConstants, EmployeeShift, SalarySettings } from "@/types/salary";
 
 // Default salary constants
@@ -216,5 +215,45 @@ export const getSalaryConstants = (shopName?: string): SalaryConstants => {
   } catch (error) {
     console.error("Error retrieving salary constants:", error);
     return DEFAULT_SALARY_CONSTANTS;
+  }
+};
+
+// Функция для импорта товаров из Google Sheets
+export const importProductsFromSheet = async (sheetId: string, range: string): Promise<any[]> => {
+  try {
+    // Здесь будет реальный вызов Google Sheets API
+    // Для демонстрации используем мок-данные
+    const mockData = [
+      { name: "Эспрессо", price: 150, category: "coffee" },
+      { name: "Американо", price: 170, category: "coffee" },
+      { name: "Капучино", price: 250, category: "coffee" }
+    ];
+    return mockData;
+  } catch (error) {
+    console.error("Ошибка при импорте товаров из Google Sheets:", error);
+    throw error;
+  }
+};
+
+// Функция для обновления товаров в кассе
+export const updateCashRegisterProducts = async (products: any[]): Promise<void> => {
+  try {
+    // Сохраняем товары в localStorage
+    localStorage.setItem('cashRegisterProducts', JSON.stringify(products));
+  } catch (error) {
+    console.error("Ошибка при обновлении товаров в кассе:", error);
+    throw error;
+  }
+};
+
+// Функция для сброса статистики продаж
+export const resetSalesStatistics = (): void => {
+  try {
+    // Очищаем данные о продажах
+    localStorage.removeItem('salesRecords');
+    localStorage.removeItem('shiftStatistics');
+  } catch (error) {
+    console.error("Ошибка при сбросе статистики продаж:", error);
+    throw error;
   }
 };

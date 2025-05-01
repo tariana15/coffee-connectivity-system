@@ -1,6 +1,14 @@
-
-import { Product, ProductCategory } from "@/types/salary";
+import { ProductCategory } from "@/types/salary";
 import recipeData from "../../techcard/texcard.json";
+import { importProductsFromSheet, updateCashRegisterProducts, resetSalesStatistics } from "./googleSheetsService";
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  ingredients: { name: string; amount: number; unit: string }[];
+}
 
 // Predefined categories
 export const productCategories: ProductCategory[] = [
@@ -202,4 +210,33 @@ export const getMockSalesData = () => {
     categories,
     products
   };
+};
+
+// Функция для обновления товаров из Google Sheets
+export const updateProductsFromGoogleSheets = async (sheetId: string, range: string): Promise<void> => {
+  try {
+    // Импортируем товары из Google Sheets
+    const importedProducts = await importProductsFromSheet(sheetId, range);
+    
+    // Преобразуем импортированные товары в формат Product
+    const products: Product[] = importedProducts.map((item: any) => ({
+      id: Math.random().toString(36).substring(2, 11),
+      name: item.name,
+      price: item.price,
+      category: item.category,
+      ingredients: []
+    }));
+    
+    // Обновляем товары в кассе
+    await updateCashRegisterProducts(products);
+    
+    // Сбрасываем статистику продаж
+    resetSalesStatistics();
+    
+    // Сохраняем товары в localStorage
+    localStorage.setItem('coffeeShopProducts', JSON.stringify(products));
+  } catch (error) {
+    console.error("Ошибка при обновлении товаров из Google Sheets:", error);
+    throw error;
+  }
 };
