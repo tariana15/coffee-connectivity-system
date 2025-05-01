@@ -1,37 +1,31 @@
 import { createClient } from '@supabase/supabase-js';
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  throw new Error('Missing environment variable: NEXT_PUBLIC_SUPABASE_URL');
-}
+const supabaseUrl ='https://zqqmgaxtzlzmejwffsap.supabase.co';
+const supabaseAnonKey ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxcW1nYXh0emx6bWVqd2Zmc2FwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3NDM2MjQsImV4cCI6MjA2MDMxOTYyNH0.9bNBof6JVyR9z94e8zzaA4KdfggdyXZny9SfJ8LiNsI';
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-  throw new Error('Missing environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY');
-}
-
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Типы для таблиц
-export type Product = {
+export interface Product {
   id: string;
   name: string;
-  price: number;
   category: string;
-  ingredients: { name: string; amount: number; unit: string }[];
+  quantity: number;
+  unit: string;
+  price: number;
   created_at: string;
-};
+}
 
-export type Recipe = {
+export interface Recipe {
   id: string;
-  name: string;
   drink_type: string;
+  drink_name: string;
   ingredients: string;
-  created_at: string;
-};
+  preparation: string;
+  price: number;
+}
 
-export type Sale = {
+export interface Sale {
   id: string;
   shift_id: string;
   items: {
@@ -46,9 +40,9 @@ export type Sale = {
   customer_phone?: string;
   bonus_earned?: number;
   created_at: string;
-};
+}
 
-export type Shift = {
+export interface Shift {
   id: string;
   is_open: boolean;
   opened_at: string;
@@ -58,4 +52,4 @@ export type Shift = {
   coffee_count: number;
   food_count: number;
   created_at: string;
-}; 
+}

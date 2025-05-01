@@ -3,8 +3,8 @@ import { supabase, Product, Recipe, Sale, Shift } from "@/lib/supabase";
 // Работа с товарами
 export const getProducts = async (): Promise<Product[]> => {
   const { data, error } = await supabase
-    .from('products')
-    .select('*')
+    .from('goods')
+    .select('id, name, category, quantity, unit, price, created_at')
     .order('created_at', { ascending: false });
   
   if (error) throw error;
@@ -13,7 +13,7 @@ export const getProducts = async (): Promise<Product[]> => {
 
 export const addProduct = async (product: Omit<Product, 'id' | 'created_at'>): Promise<Product> => {
   const { data, error } = await supabase
-    .from('products')
+    .from('goods')
     .insert([product])
     .select()
     .single();
@@ -25,17 +25,17 @@ export const addProduct = async (product: Omit<Product, 'id' | 'created_at'>): P
 // Работа с техкартой
 export const getRecipes = async (): Promise<Recipe[]> => {
   const { data, error } = await supabase
-    .from('recipes')
-    .select('*')
-    .order('created_at', { ascending: false });
+    .from('products')
+    .select('id, drink_type, drink_name, ingredients, preparation, price')
+    .order('id', { ascending: false });
   
   if (error) throw error;
   return data || [];
 };
 
-export const addRecipe = async (recipe: Omit<Recipe, 'id' | 'created_at'>): Promise<Recipe> => {
+export const addRecipe = async (recipe: Omit<Recipe, 'id'>): Promise<Recipe> => {
   const { data, error } = await supabase
-    .from('recipes')
+    .from('products')
     .insert([recipe])
     .select()
     .single();
